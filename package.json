@@ -2,13 +2,27 @@
   "name": "tinymonad",
   "version": "1.0.0",
   "description": "Simple implementation of common Monads",
-  "main": "dist/index.js",
+  "main": "dist/umd/index.js",
+  "module": "dist/es6/index.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
+    "build": "npm run build:es6 && npm run build:umd && npm run build:types",
+    "build:es6": "tsc --module es6 --target es2017 --outDir dist/es6",
+    "build:umd": "tsc --module umd --target es2017 --outDir dist/umd",
+    "build:types": "tsc -d --emitDeclarationOnly --outDir dist/types"
   },
   "keywords": [
     "monad",
     "functional"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ficoos/tinymonad"
+  },
+  "bugs": {
+    "url": "https://github.com/ficoos/tinymonad/issues"
+  },
+  "homepage": "https://github.com/ficoos/tinymonad#readme",
   "author": "Saggi Mizrahi <saggi@mizrahi.cc>",
   "license": "ISC",
   "dependencies": {
