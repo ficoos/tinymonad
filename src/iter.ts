@@ -4,7 +4,15 @@ import {
     Some,
 } from './maybe';
 
-class _Iter<T> implements Iterable<T> {
+interface SafeIterable<T> extends Iterable<T> {
+    [Symbol.iterator](): Iterator<T>;
+    map<R>(f: (v: T) => R): SafeIterable<R>;
+    filter(f: (v: T) => boolean): SafeIterable<T>;
+    find(f: (v: T) => boolean): Maybe<T>;
+    first(): Maybe<T>;
+}
+
+class _Iter<T> implements SafeIterable<T> {
     private readonly _it: Iterable<T>;
 
     constructor(it: Iterable<T>) {
@@ -15,7 +23,7 @@ class _Iter<T> implements Iterable<T> {
         return this._it[Symbol.iterator]();
     }
 
-    public map<R>(f: (v: T) => R): _Iter<R> {
+    public map<R>(f: (v: T) => R): SafeIterable<R> {
         const it = this._it;
         return Iter(function*() {
             for (const v of it) {
@@ -24,7 +32,7 @@ class _Iter<T> implements Iterable<T> {
         }());
     }
 
-    public filter(f: (v: T) => boolean): _Iter<T> {
+    public filter(f: (v: T) => boolean): SafeIterable<T> {
         const it = this._it;
         return Iter<T>(function*(): Iterable<T> {
             for (const v of it) {
@@ -54,6 +62,6 @@ class _Iter<T> implements Iterable<T> {
     }
 }
 
-export function Iter<T>(it: Iterable<T>) {
+export function Iter<T>(it: Iterable<T>): SafeIterable<T> {
     return new _Iter(it);
 }
