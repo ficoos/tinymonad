@@ -1,0 +1,18 @@
+{
+  "name": "tinymonad",
+  "version": "1.0.0",
+  "description": "Simple implementation of common Monads",
+  "main": "dist/index.js",
+  "scripts": {
+  },
+  "keywords": [
+    "monad",
+    "functional"
+  ],
+  "author": "Saggi Mizrahi <saggi@mizrahi.cc>",
+  "license": "ISC",
+  "dependencies": {
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.2"
+  }
+}
