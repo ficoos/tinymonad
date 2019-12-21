@@ -1,5 +1,5 @@
 {
-  "name": "tinymonad",
+  "name": "@ficoos/tinymonad",
   "version": "1.0.0",
   "description": "Simple implementation of common Monads",
   "main": "dist/umd/index.js",
