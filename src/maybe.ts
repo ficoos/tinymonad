@@ -3,36 +3,44 @@ import {
     Value,
 } from './value';
 
+export function isJust(m: Maybe<any>): boolean {
+    return m.isJust();
+}
+
+export function isNothing(m: Maybe<any>): boolean {
+    return m.isNothing();
+}
+
 export interface Maybe<T> {
-    readonly kind: 'some' | 'none';
-    isSome(): boolean;
-    isNone(): boolean;
-    // unwrap unwraps the value, if `Maybe` is `None` throws an exception.
+    readonly kind: 'just' | 'nothing';
+    isJust(): boolean;
+    isNothing(): boolean;
+    // unwrap unwraps the value, if `Maybe` is `Nothing` throws an exception.
     unwrap(): T;
     fold(defaultValue: Value<T>): T;
     map<R>(f: (v: T) => R): Maybe<R>;
     match<R>(m: MaybeMatcher<T, R>): R;
+    toString(): string;
 }
 
 export interface MaybeMatcher<T, R> {
-    some: (v: T) => R;
-    none: Value<R>;
+    just: (v: T) => R;
+    nothing: Value<R>;
 }
 
-// tslint:disable-next-line: class-name
-class _Some<T> implements Maybe<T> {
-    public readonly kind = 'some';
+class Just<T> implements Maybe<T> {
+    public readonly kind = 'just';
     private readonly  _value: T;
 
     public constructor(value: T) {
         this._value = value;
     }
 
-    public isSome(): boolean {
+    public isJust(): boolean {
         return true;
     }
 
-    public isNone(): boolean {
+    public isNothing(): boolean {
         return false;
     }
 
@@ -41,7 +49,7 @@ class _Some<T> implements Maybe<T> {
     }
 
     public match<R>(m: MaybeMatcher<T, R>): R {
-        return m.some(this._value);
+        return m.just(this._value);
     }
 
     public fold(_: Value<T>): T {
@@ -49,28 +57,27 @@ class _Some<T> implements Maybe<T> {
     }
 
     public map<R>(f: (v: T) => R): Maybe<R> {
-        return Some(f(this._value));
+        return just(f(this._value));
     }
 
     public toString(): string {
-        return `Some(${this._value})`;
+        return `Just(${this._value})`;
     }
 }
 
-// SomeIF returns None if v is null or undefined, otherwise returns Some(v)
-export function SomeIf<T>(v: T | undefined | null): Maybe<T> {
-    return v !== undefined && v !== null ? Some(v) : None();
+// SomeIF returns `nothing` if v is null or undefined, otherwise returns just(v)
+export function JustIf<T>(v: T | undefined | null): Maybe<T> {
+    return v !== undefined && v !== null ? just(v) : nothing();
 }
 
-export function Some<T>(v: T): Maybe<T> {
-    return new _Some(v);
+export function just<T>(v: T): Maybe<T> {
+    return new Just(v);
 }
 
-// tslint:disable-next-line: variable-name
-export const _None = {
-    kind: 'none',
+export const _nothing: Maybe<any> = {
+    kind: 'nothing',
     match<R>(m: MaybeMatcher<any, R>): R {
-        return unwrapValue(m.none);
+        return unwrapValue(m.nothing);
     },
     fold(defaultValue: Value<any>): any {
         return unwrapValue(defaultValue);
@@ -78,20 +85,20 @@ export const _None = {
     map<R>(_: (v: any) => R): Maybe<R> {
         return this;
     },
-    isSome() {
+    isJust() {
         return false;
     },
-    isNone() {
+    isNothing() {
         return true;
     },
     unwrap(): any {
-        throw new Error('Tried to unwrap a none value');
+        throw new Error('Tried to unwrap nothing');
     },
     toString(): string {
-        return 'None';
+        return 'Nothing';
     },
-} as Maybe<any>;
+};
 
-export function None<T>(): Maybe<T> {
-    return _None;
+export function nothing<T>(): Maybe<T> {
+    return _nothing;
 }

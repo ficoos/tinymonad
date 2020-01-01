@@ -1,7 +1,7 @@
 import {
+    just,
     Maybe,
-    None,
-    Some,
+    nothing,
 } from './maybe';
 
 interface SafeIterable<T> extends Iterable<T> {
@@ -12,7 +12,7 @@ interface SafeIterable<T> extends Iterable<T> {
     first(): Maybe<T>;
 }
 
-class _Iter<T> implements SafeIterable<T> {
+class Iter<T> implements SafeIterable<T> {
     private readonly _it: Iterable<T>;
 
     constructor(it: Iterable<T>) {
@@ -25,7 +25,7 @@ class _Iter<T> implements SafeIterable<T> {
 
     public map<R>(f: (v: T) => R): SafeIterable<R> {
         const it = this._it;
-        return Iter(function*() {
+        return iter(function*() {
             for (const v of it) {
                 yield f(v);
             }
@@ -34,7 +34,7 @@ class _Iter<T> implements SafeIterable<T> {
 
     public filter(f: (v: T) => boolean): SafeIterable<T> {
         const it = this._it;
-        return Iter<T>(function*(): Iterable<T> {
+        return iter<T>(function*(): Iterable<T> {
             for (const v of it) {
                 if (f(v)) {
                     yield v;
@@ -47,21 +47,21 @@ class _Iter<T> implements SafeIterable<T> {
         const it = this._it;
         for (const v of it) {
             if (f(v)) {
-                return Some(v);
+                return just(v);
             }
         }
-        return None();
+        return nothing();
     }
 
     public first(): Maybe<T> {
         const it = this._it;
         for (const v of it) {
-            return Some(v);
+            return just(v);
         }
-        return None();
+        return nothing();
     }
 }
 
-export function Iter<T>(it: Iterable<T>): SafeIterable<T> {
-    return new _Iter(it);
+export function iter<T>(it: Iterable<T>): SafeIterable<T> {
+    return new Iter(it);
 }

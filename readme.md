@@ -13,7 +13,7 @@ bower install tinymonad --save
 
 ```javascript
 var m = require('tinymonad');
-var value = m.Some('value');
+var value = m.just('value');
 value.map((v) => console.log(v));
 ```
 ```sh
@@ -24,7 +24,7 @@ Output should be 'value'
 
 ```typescript
 import { Some, Meybe } from 'tinymonad';
-const value: Maybe<string> = Some('value');
+const value: Maybe<string> = just('value');
 value.map((v) => console.log(v));
 ```
 ```sh

@@ -1,6 +1,6 @@
 import {
-    Err,
-    Ok,
+    err,
+    ok,
     Result,
 } from './result';
 
@@ -8,8 +8,8 @@ import {
 // that will allways call `Promise.then`.
 export function safePromise<R, E = any>(p: Promise<R>): Promise<Result<R, E>> {
     return new Promise<Result<R, E>>((resolve, _reject) => {
-        p.then((v) => resolve(Ok(v)));
-        p.catch((e) => resolve(Err(e)));
+        p.then((v) => resolve(ok(v)));
+        p.catch((e) => resolve(err(e)));
     });
 }
 
@@ -18,9 +18,9 @@ export function resultify<T, A extends any[], E = any>(
 ): (...args: A) => Result<T, E> {
     return (...args: A) => {
         try {
-            return Ok(f(...args));
+            return ok(f(...args));
         } catch (e) {
-            return Err(e);
+            return err(e);
         }
     };
 }

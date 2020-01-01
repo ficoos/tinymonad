@@ -1,7 +1,7 @@
 import {
+    just,
     Maybe,
-    None,
-    Some,
+    nothing,
  } from './maybe';
 
 export interface ResultMatcher<T, E, R> {
@@ -19,7 +19,7 @@ export interface Result<T, E> {
     err(): Maybe<E>;
 }
 
-class _Ok<T, E> implements Result<T, E> {
+class Ok<T, E> implements Result<T, E> {
     public readonly kind = 'ok';
     private readonly _result: T;
     constructor(v: T) {
@@ -35,7 +35,7 @@ class _Ok<T, E> implements Result<T, E> {
     }
 
     public map<R>(f: (v: T) => R): Result<R, E> {
-        return Ok(f(this._result));
+        return ok(f(this._result));
     }
 
     public match<R>(m: ResultMatcher<T, any, R>): R {
@@ -43,11 +43,11 @@ class _Ok<T, E> implements Result<T, E> {
     }
 
     public ok(): Maybe<T> {
-        return Some(this._result);
+        return just(this._result);
     }
 
     public err(): Maybe<E> {
-        return None();
+        return nothing();
     }
 
     public toString(): string {
@@ -55,11 +55,11 @@ class _Ok<T, E> implements Result<T, E> {
     }
 }
 
-export function Ok<T, E>(v: T): Result<T, E> {
-    return new _Ok<T, E>(v);
+export function ok<T, E>(v: T): Result<T, E> {
+    return new Ok<T, E>(v);
 }
 
-class _Err<T, E> implements Result<T, E> {
+class Err<T, E> implements Result<T, E> {
     public readonly kind = 'err';
     private readonly _error: E;
     constructor(v: E) {
@@ -75,7 +75,7 @@ class _Err<T, E> implements Result<T, E> {
     }
 
     public map<R>(_: (v: T) => R): Result<R, E> {
-        return Err(this._error);
+        return err(this._error);
     }
 
     public match<R>(m: ResultMatcher<T, any, R>): R {
@@ -83,11 +83,11 @@ class _Err<T, E> implements Result<T, E> {
     }
 
     public ok(): Maybe<T> {
-        return None();
+        return nothing();
     }
 
     public err(): Maybe<E> {
-        return Some(this._error);
+        return just(this._error);
     }
 
     public toString(): string {
@@ -95,6 +95,6 @@ class _Err<T, E> implements Result<T, E> {
     }
 }
 
-export function Err<T, E>(e: E): Result<T, E> {
-    return new _Err(e);
+export function err<T, E>(e: E): Result<T, E> {
+    return new Err(e);
 }
