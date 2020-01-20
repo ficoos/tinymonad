@@ -1,16 +1,21 @@
 import {
-    err,
+    error,
     ok,
     Result,
 } from './result';
 
+import { just } from './maybe';
+
 // SafePromise converts a `Promise<T>` to a `Promise<Result<T, E>>`
 // that will allways call `Promise.then`.
 export function safePromise<R, E = any>(p: Promise<R>): Promise<Result<R, E>> {
-    return new Promise<Result<R, E>>((resolve, _reject) => {
-        p.then((v) => resolve(ok(v)));
-        p.catch((e) => resolve(err(e)));
-    });
+    return p.then(ok, error) as Promise<Result<R, E>>;
+}
+
+export function resultifyPromise<T, A extends any[], E = any>(
+    f: (...args: A) => Promise<T>,
+): (...args: A) => Promise<Result<T, E>> {
+    return (...args: A) => f(...args).then((v) => ok(v), (e) => error(e));
 }
 
 export function resultify<T, A extends any[], E = any>(
@@ -20,7 +25,7 @@ export function resultify<T, A extends any[], E = any>(
         try {
             return ok(f(...args));
         } catch (e) {
-            return err(e);
+            return error(e);
         }
     };
 }

@@ -1,4 +1,9 @@
 import {
+    Bindable,
+    Foldable,
+    Mappable,
+} from './traits';
+import {
     unwrapValue,
     Value,
 } from './value';
@@ -11,12 +16,13 @@ export function isNothing(m: Maybe<any>): boolean {
     return m.isNothing();
 }
 
-export interface Maybe<T> {
+export interface Maybe<T> extends Bindable<T>, Mappable<T>, Foldable<T> {
     readonly kind: 'just' | 'nothing';
     isJust(): boolean;
     isNothing(): boolean;
     // unwrap unwraps the value, if `Maybe` is `Nothing` throws an exception.
     unwrap(): T;
+    bind<R>(f: (v: T) => Maybe<R>): Maybe<R>;
     fold(defaultValue: Value<T>): T;
     map<R>(f: (v: T) => R): Maybe<R>;
     match<R>(m: MaybeMatcher<T, R>): R;
@@ -44,6 +50,10 @@ class Just<T> implements Maybe<T> {
         return false;
     }
 
+    public bind<R>(f: (v: T) => Maybe<R>): Maybe<R> {
+        return f(this._value);
+    }
+
     public unwrap(): T {
         return this._value;
     }
@@ -65,9 +75,9 @@ class Just<T> implements Maybe<T> {
     }
 }
 
-// SomeIF returns `nothing` if v is null or undefined, otherwise returns just(v)
-export function JustIf<T>(v: T | undefined | null): Maybe<T> {
-    return v !== undefined && v !== null ? just(v) : nothing();
+// JustIfDefined returns `nothing` if v is undefined, otherwise returns just(v)
+export function JustIfDefined<T>(v: T | undefined): Maybe<T> {
+    return v !== undefined ? just(v) : nothing();
 }
 
 export function just<T>(v: T): Maybe<T> {
@@ -93,6 +103,9 @@ export const _nothing: Maybe<any> = {
     },
     unwrap(): any {
         throw new Error('Tried to unwrap nothing');
+    },
+    bind<R>(_f: (v: any) => Maybe<R>): Maybe<R> {
+        return this;
     },
     toString(): string {
         return 'Nothing';

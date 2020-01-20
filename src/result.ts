@@ -2,21 +2,26 @@ import {
     just,
     Maybe,
     nothing,
- } from './maybe';
+} from './maybe';
+import {
+    Bindable,
+    Mappable,
+} from './traits';
 
 export interface ResultMatcher<T, E, R> {
     ok(v: T): R;
-    err(v: E): R;
+    error(v: E): R;
 }
 
-export interface Result<T, E> {
-    readonly kind: 'ok' | 'err';
+export interface Result<T, E> extends Bindable<T>, Mappable<T> {
+    readonly kind: 'ok' | 'error';
     match<R>(m: ResultMatcher<T, E, R>): R;
     map<R>(f: (v: T) => R): Result<R, E>;
+    bind<R, E2>(f: (v: T) => Result<R, E2>): Result<R, E | E2>;
     isOk(): boolean;
-    isErr(): boolean;
+    isError(): boolean;
     ok(): Maybe<T>;
-    err(): Maybe<E>;
+    error(): Maybe<E>;
 }
 
 class Ok<T, E> implements Result<T, E> {
@@ -30,7 +35,7 @@ class Ok<T, E> implements Result<T, E> {
         return true;
     }
 
-    public isErr() {
+    public isError() {
         return false;
     }
 
@@ -42,11 +47,15 @@ class Ok<T, E> implements Result<T, E> {
         return m.ok(this._result);
     }
 
+    public bind<R, E2>(f: (v: T) => Result<R, E2>): Result<R, E | E2> {
+        return f(this._result);
+    }
+
     public ok(): Maybe<T> {
         return just(this._result);
     }
 
-    public err(): Maybe<E> {
+    public error(): Maybe<E> {
         return nothing();
     }
 
@@ -59,8 +68,8 @@ export function ok<T, E>(v: T): Result<T, E> {
     return new Ok<T, E>(v);
 }
 
-class Err<T, E> implements Result<T, E> {
-    public readonly kind = 'err';
+class _Error<T, E> implements Result<T, E> {
+    public readonly kind = 'error';
     private readonly _error: E;
     constructor(v: E) {
         this._error = v;
@@ -70,31 +79,35 @@ class Err<T, E> implements Result<T, E> {
         return false;
     }
 
-    public isErr() {
+    public isError() {
         return false;
     }
 
+    public bind<R, E2>(_: (v: T) => Result<R, E2>): Result<R, E | E2> {
+        return error(this._error);
+    }
+
     public map<R>(_: (v: T) => R): Result<R, E> {
-        return err(this._error);
+        return error(this._error);
     }
 
     public match<R>(m: ResultMatcher<T, any, R>): R {
-        return m.err(this.err);
+        return m.error(this._error);
     }
 
     public ok(): Maybe<T> {
         return nothing();
     }
 
-    public err(): Maybe<E> {
+    public error(): Maybe<E> {
         return just(this._error);
     }
 
     public toString(): string {
-        return `Err(${this._error})`;
+        return `Error(${this._error})`;
     }
 }
 
-export function err<T, E>(e: E): Result<T, E> {
-    return new Err(e);
+export function error<T, E>(e: E): Result<T, E> {
+    return new _Error(e);
 }
